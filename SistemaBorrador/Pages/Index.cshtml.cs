@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using SistemaBorrador.Repositories;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -26,8 +28,7 @@ namespace SistemaBorrador.Pages
         }
 
         public void OnGet()
-        {
-
+        {   
         }
 
         public ActionResult OnPost()
@@ -40,7 +41,24 @@ namespace SistemaBorrador.Pages
             var usuario = this.Usuario;
             var pass = this.Password;
 
-            return Page();
+            var repo = new LoginRepository();
+            if (repo.UsuarioExist(usuario, pass))
+            {
+                Guid sessionId = Guid.NewGuid();
+                HttpContext.Session.SetString("sessionId", sessionId.ToString());
+                Response.Cookies.Append("sessionId", sessionId.ToString());
+
+                return RedirectToPage("./Test");
+            }
+            else
+            {
+                ModelState.AddModelError(string.Empty, "Usuario o contraseña incorrectos");
+                return Page();
+            }
+
+            //Validar si estan en la BD
+
+            
         }
     }
 }
